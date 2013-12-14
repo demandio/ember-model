@@ -244,3 +244,21 @@ test("custom attributes should revert correctly", function () {
   // should not be dirty now
   ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
 });
+
+test("attr should handle default values", function() {
+  var Book = Ember.Model.extend({
+    author: attr(String, { defaultValue: 'anonymous'}),
+    ghostwriter: attr(String, { defaultValue: 'anonymous'})
+  });
+  var book = Book.create();
+
+  Ember.run(function() {
+    book.load(1, { author: "Jane" });
+  });
+
+  var json = book.toJSON();
+  equal(book.get('author'), "Jane", "author should be Jane");
+  equal(book.get('ghostwriter'), "anonymous", "missing value should be filled in");
+  equal(json.author, "Jane", "json.Author should be Guilherme");
+  equal(json.ghostwriter, "anonymous", "ghostwriter should be filled in");
+});
