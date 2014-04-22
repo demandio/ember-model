@@ -369,6 +369,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
 Ember.Model.reopenClass({
   primaryKey: 'id',
+  recordArrayClass: null,
 
   adapter: Ember.Adapter.create(),
 
@@ -425,7 +426,8 @@ Ember.Model.reopenClass({
   },
 
   _findFetchQuery: function(params, isFetch, container) {
-    var records = Ember.RecordArray.create({modelClass: this, _query: params, container: container});
+    var recordArrayClass = get(this,'recordArrayClass') || Ember.RecordArray;
+    var records = recordArrayClass.create({modelClass: this, _query: params, container: container});
 
     var promise = this.adapter.findQuery(this, records, params);
 
@@ -443,7 +445,8 @@ Ember.Model.reopenClass({
   _findFetchMany: function(ids, isFetch, container) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
 
-    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container}),
+    var recordArrayClass = get(this,'recordArrayClass') || Ember.RecordArray;
+    var records = recordArrayClass.create({_ids: ids, modelClass: this, container: container}),
         deferred;
 
     if (!this.recordArrays) { this.recordArrays = []; }
@@ -491,7 +494,8 @@ Ember.Model.reopenClass({
       }
     }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
+    var recordArrayClass = get(this,'recordArrayClass') || Ember.RecordArray;
+    var records = this._findAllRecordArray = recordArrayClass.create({modelClass: this, container: container});
 
     var promise = this.adapter.findAll(this, records);
 
@@ -595,7 +599,8 @@ Ember.Model.reopenClass({
     if (requestIds.length === 1) {
       promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0]);
     } else {
-      var recordArray = Ember.RecordArray.create({_ids: batchIds, container: container});
+      var recordArrayClass = get(this,'recordArrayClass') || Ember.RecordArray;
+      var recordArray = recordArrayClass.create({_ids: batchIds, container: container});
       if (requestIds.length === 0) {
         promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
